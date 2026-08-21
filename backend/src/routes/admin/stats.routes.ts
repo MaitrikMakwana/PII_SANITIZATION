@@ -72,12 +72,20 @@ router.get('/', async (_req: AuthRequest, res: Response) => {
       .sort((a, b) => b.count - a.count);
 
     // Queue stats from BullMQ
-    const [queueWaiting, queueActive, queueFailed, queueCompleted] = await Promise.all([
-      piiScanQueue.getWaitingCount(),
-      piiScanQueue.getActiveCount(),
-      piiScanQueue.getFailedCount(),
-      piiScanQueue.getCompletedCount(),
-    ]);
+    let queueWaiting = 0;
+    let queueActive = 0;
+    let queueFailed = 0;
+    let queueCompleted = 0;
+    try {
+      [queueWaiting, queueActive, queueFailed, queueCompleted] = await Promise.all([
+        piiScanQueue.getWaitingCount(),
+        piiScanQueue.getActiveCount(),
+        piiScanQueue.getFailedCount(),
+        piiScanQueue.getCompletedCount(),
+      ]);
+    } catch (err) {
+      console.error('[Stats] Queue metrics unavailable:', err);
+    }
 
     // Original files + sanitized copies both live in R2
     const originalBytes = Number(storageAgg._sum.sizeBytes ?? 0);

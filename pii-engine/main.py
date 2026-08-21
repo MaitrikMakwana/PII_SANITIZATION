@@ -462,17 +462,8 @@ def _clean_entity_dicts(entity_list: list[dict]) -> list[dict]:
 
 # ─── Masking helpers ─────────────────────────────────────────────────────────
 
-# Entity types whose values should stay VISIBLE (not masked).
-# They are still detected and reported, but the sanitized output keeps them.
-_KEEP_VISIBLE_TYPES = {"PERSON", "EMAIL_ADDRESS", "LOCATION"}
-
-
 def _mask_entity(entity_type: str, original_text: str) -> str | None:
-    """Return a masked version of the PII text.  Returns None for types
-    that should stay visible (names, emails, locations)."""
-
-    if entity_type in _KEEP_VISIBLE_TYPES:
-        return None  # keep original — do not redact
+    """Return a masked version of the detected PII text."""
 
     if entity_type == "CVV":
         # "489" → "***"
@@ -553,13 +544,13 @@ def _mask_entity(entity_type: str, original_text: str) -> str | None:
 
 def _mask_text_manual(text: str, entity_list: list[dict]) -> str:
     """Replace PII in text with masked versions (offset-based, end-to-start).
-    Skips entities whose type is in _KEEP_VISIBLE_TYPES."""
+    All detected entities are masked according to their entity type."""
     sorted_ents = sorted(entity_list, key=lambda e: e["start"], reverse=True)
     result = text
     for ent in sorted_ents:
         masked = _mask_entity(ent["type"], ent["text"])
         if masked is None:
-            continue  # keep visible
+            continue
         result = result[:ent["start"]] + masked + result[ent["end"]:]
     return result
 

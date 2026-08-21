@@ -9,12 +9,10 @@ dist-ssr/
 build/
 out/
 
-# Environment files
+# Environment files and secrets
 .env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
+.env.*
+!.env.example
 
 # Logs
 logs/
@@ -47,3 +45,14 @@ pii-engine/__pycache__/
 presidio-main/
 *.pyc
 __pycache__/
+
+# Local uploads and test fixtures
+test-files/
+uploads/
+*.tmp
+
+# Test and coverage output
+coverage/
+.nyc_output/
+.pytest_cache/
+.mypy_cache/

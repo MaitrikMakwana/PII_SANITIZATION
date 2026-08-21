@@ -144,11 +144,15 @@ async function processJob(job: Job<PiiScanJobData>): Promise<void> {
     include: { uploader: { select: { email: true, name: true } } },
   });
   if (file?.uploader) {
-    await emailService.sendFileReady(
-      file.uploader.email,
-      file.uploader.name,
-      file.originalName,
-    );
+    try {
+      await emailService.sendFileReady(
+        file.uploader.email,
+        file.uploader.name,
+        file.originalName,
+      );
+    } catch (err) {
+      console.error('[Worker] File-ready email failed; sanitization remains complete:', err);
+    }
   }
 
   console.log(`[Worker] Job ${job.id} completed in ${processingTimeMs}ms — ${stats.total} PII entities`);
@@ -165,7 +169,16 @@ const worker = new Worker<PiiScanJobData>('pii-scan', processJob, {
 
 worker.on('failed', async (job, err) => {
   if (!job) return;
-  console.error(`[Worker] Job ${job.id} failed (attempt ${job.attemptsMade}):`, err.message);
+  const requestError = err as Error & {
+    response?: { status?: number; data?: unknown };
+    config?: { url?: string };
+  };
+  console.error(`[Worker] Job ${job.id} failed (attempt ${job.attemptsMade}):`, {
+    message: requestError.message,
+    status: requestError.response?.status,
+    url: requestError.config?.url,
+    response: requestError.response?.data,
+  });
 
   const maxAttempts = job.opts.attempts ?? 3;
 
