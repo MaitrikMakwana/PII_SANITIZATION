@@ -241,8 +241,8 @@ Open **http://localhost:5173** in your browser.
 
 | Role | Email | Password |
 |------|-------|----------|
-| Admin | piisanitize@gmail.com | Admin@123 |
-| User | kachhiyadarshan6514@gmail.com | Dar@1234 |
+| Admin | admin@pill.com | Admin@123 |
+| User | user@pill.com | user@123 |
 
 ---
 
