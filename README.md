@@ -233,6 +233,8 @@ npm run dev
 
 Wait for: `Local: http://localhost:5173/`
 
+During local development, Vite proxies `/api` requests to the backend on port 3001. This works whether you open the frontend through `localhost` or `127.0.0.1`.
+
 Open **http://localhost:5173** in your browser.
 
 ---
@@ -242,7 +244,7 @@ Open **http://localhost:5173** in your browser.
 | Role | Email | Password |
 |------|-------|----------|
 | Admin | admin@pill.com | Admin@123 |
-| User | user@pill.com | user@123 |
+| User | user@pill.com | User@123 |
 
 ---
 
