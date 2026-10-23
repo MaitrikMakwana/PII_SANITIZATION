@@ -239,6 +239,31 @@ Open **http://localhost:5173** in your browser.
 
 ---
 
+## Production Deployment
+
+The frontend is deployed to Vercel; the Express API, BullMQ worker, and Python PII engine run as separate Render services. The root `render.yaml` defines the three backend services and prompts for secrets instead of storing them in the repository.
+
+### 1. Deploy backend services to Render
+
+1. In Render, create a Blueprint from this GitHub repository and select the root `render.yaml`.
+2. Enter the production `DATABASE_URL`, `REDIS_URL`, Cloudflare R2 credentials/bucket, Brevo API key, and sender email when prompted. Render generates `JWT_SECRET`.
+   - If the Vercel URL is not available yet, use a temporary value for `CORS_ORIGIN` and replace it after deploying the frontend.
+3. Choose service plans that support your expected traffic and processing needs. The worker must stay running to process queued uploads.
+4. After the API deploys, confirm its `/health` endpoint responds with HTTP 200.
+
+Use rotated production credentials. Do not commit `.env` files or paste secrets into chat. If the production database is empty, apply the Prisma schema once using the production database URL; do not run schema changes against a database without a backup.
+
+### 2. Deploy the frontend to Vercel
+
+1. Import the repository into Vercel with the project root as the Root Directory. The existing `vercel.json` configures the Vite build, `dist` output, and SPA route fallback.
+2. Set the `VITE_API_URL` environment variable for Production to the Render API URL ending in `/api` (for example, `https://your-api.onrender.com/api`). Do not include a trailing slash.
+3. Deploy the frontend and copy its production origin (for example, `https://your-app.vercel.app`).
+4. Set the Render API's `CORS_ORIGIN` to that exact Vercel origin, then redeploy/restart the API.
+
+The frontend's production build requires `VITE_API_URL`; without it, API requests use the local-development fallback and will not work for visitors.
+
+---
+
 ## Default Credentials
 
 | Role | Email | Password |

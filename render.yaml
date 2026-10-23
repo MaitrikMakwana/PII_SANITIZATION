@@ -1,0 +1,82 @@
+services:
+  - type: web
+    name: pii-sanitization-api
+    runtime: node
+    region: ohio
+    rootDir: backend
+    buildCommand: npm ci && npx prisma generate && npm run build
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: CORS_ORIGIN
+        sync: false
+      - key: R2_ENDPOINT
+        sync: false
+      - key: R2_ACCESS_KEY_ID
+        sync: false
+      - key: R2_SECRET_ACCESS_KEY
+        sync: false
+      - key: R2_BUCKET_NAME
+        sync: false
+      - key: REDIS_URL
+        sync: false
+      - key: BREVO_API_KEY
+        sync: false
+      - key: BREVO_FROM_EMAIL
+        sync: false
+      - key: BREVO_FROM_NAME
+        value: PII Sanitize
+
+  - type: worker
+    name: pii-sanitization-worker
+    runtime: node
+    region: ohio
+    rootDir: backend
+    buildCommand: npm ci && npx prisma generate && npm run build
+    startCommand: npm run start:worker
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        sync: false
+      - key: R2_ENDPOINT
+        sync: false
+      - key: R2_ACCESS_KEY_ID
+        sync: false
+      - key: R2_SECRET_ACCESS_KEY
+        sync: false
+      - key: R2_BUCKET_NAME
+        sync: false
+      - key: REDIS_URL
+        sync: false
+      - key: PII_ENGINE_URL
+        fromService:
+          type: web
+          name: pii-sanitization-engine
+          property: url
+      - key: BREVO_API_KEY
+        sync: false
+      - key: BREVO_FROM_EMAIL
+        sync: false
+      - key: BREVO_FROM_NAME
+        value: PII Sanitize
+      - key: WORKER_CONCURRENCY
+        value: 3
+
+  - type: web
+    name: pii-sanitization-engine
+    runtime: docker
+    region: ohio
+    dockerfilePath: ./pii-engine/Dockerfile
+    dockerContext: ./pii-engine
+    healthCheckPath: /health
